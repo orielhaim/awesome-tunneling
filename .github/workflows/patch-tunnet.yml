@@ -1,0 +1,31 @@
+name: Patch README Tunnet
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/add_tunnet.py
+      - .github/workflows/patch-tunnet.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: add-tunnet
+      - name: Insert Tunnet entry
+        run: python3 scripts/add_tunnet.py
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet README.md; then
+            echo "No README changes"
+            exit 0
+          fi
+          git config user.name "oriel haim"
+          git config user.email "106628352+orielhaim@users.noreply.github.com"
+          git add README.md
+          # drop helper files from the PR before push if present
+          git rm -f --ignore-unmatch TUNNET_ENTRY.md scripts/add_tunnet.py .github/workflows/patch-tunnet.yml || true
+          git commit -m "Add Tunnet to Overlay networks section"
+          git push origin HEAD:add-tunnet
